@@ -1,61 +1,16 @@
 'use client';
 
+import Header from '@/components/dashboard/Header';
+import Sidebar from '@/components/dashboard/Sidebar';
 import React, { useState } from 'react';
-import { Bell,Settings,LayoutDashboard, FolderKanban, SlidersHorizontal, LogOut } from 'lucide-react';
 
 export default function Dashboard() {
     const [IsModalOpen,setIsModalOpen]=useState(false);
   return (
     <div>
-        <header className='flex items-center justify-between p-5 border-b border-gray-200 h-16'>
-            <div className='w-64 flex items-center gap-3'>
-                <div className='bg-black text-white rounded-xs w-8 h-8 justify-center flex items-center font-bold'>C</div>
-                <div>
-                    <h1 className='font-bold text-2xl'>ClickLite</h1>
-                </div>
-            </div>
-            <div>
-                <input type='text' placeholder='search' className='bg-gray-100 border w-lg border-gray-400 p-1 rounded-lg' />
-            </div>
-            <div className='flex justify-end gap-5'>
-                
-                <div>
-                    <Bell />
-                </div>
-                <div>
-                    <Settings />
-                </div>
-            </div>
-        </header>
+        <Header />
         <main className='flex'>
-            <aside className='w-64 border-r border-gray-200 min-h-screen'>
-                <ul className='flex flex-col gap-2 p-3'>
-                    <li>
-                        <a href='#' className='bg-gray-300 p-2 rounded-md flex gap-2'>
-                            <LayoutDashboard />
-                            Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
-                            <FolderKanban />
-                            Projects
-                        </a>
-                    </li>
-                    <li>
-                        <a href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
-                            <SlidersHorizontal />
-                            Settings
-                        </a>
-                    </li>
-                    <li>
-                        <a href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
-                            <LogOut />
-                            Logout
-                        </a>
-                    </li>
-                </ul>
-            </aside>
+            <Sidebar />
             <div className='flex flex-1 items-center justify-center'>
                 <div className='border-gray-200 border flex justify-center items-center flex-col gap-4 w-3xl p-5 shadow-md rounded-md'>
                     <h2 className='text-2xl'>Welcome</h2>
