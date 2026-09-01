@@ -1,32 +1,33 @@
 import React from 'react'
 import { LayoutDashboard, FolderKanban, SlidersHorizontal, LogOut } from 'lucide-react';
+import Link from 'next/link';
 export default function Sidebar() {
   return (
     <aside className='w-64 border-r border-gray-200 min-h-screen'>
             <ul className='flex flex-col gap-2 p-3'>
                 <li>
-                    <a href='#' className='bg-gray-300 p-2 rounded-md flex gap-2'>
+                    <Link href='/dashboard' className='bg-gray-300 p-2 rounded-md flex gap-2'>
                         <LayoutDashboard />
                         Dashboard
-                    </a>
+                    </Link>
                 </li>
                 <li>
-                    <a href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
+                    <Link href='/projects' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
                         <FolderKanban />
                         Projects
-                    </a>
+                    </Link>
                 </li>
                 <li>
-                    <a href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
+                    <Link href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
                         <SlidersHorizontal />
                         Settings
-                    </a>
+                    </Link>
                 </li>
                 <li>
-                    <a href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
+                    <Link href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
                         <LogOut />
                         Logout
-                    </a>
+                    </Link>
                 </li>
             </ul>
         </aside>
