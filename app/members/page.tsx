@@ -5,7 +5,7 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function TaskList() {
+export default function Members() {
   const [IsModalOpen,setIsModalOpen]=useState(false);
   return (
     <div>
@@ -16,16 +16,10 @@ export default function TaskList() {
 
                 <div className='flex justify-between w-full items-center'>
                     <div>
-                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Tasks</h2>
+                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Members</h2>
                     </div>
-                    <div className='flex gap-3 items-center'>
-                        <div>
-                            <Link href={'/projects/1/kanban'} className='bg-green-700 text-white p-3 rounded-lg cursor-pointer'>Kanban Board</Link>
-                        </div>
-                        <div>
-                            <button onClick={()=>setIsModalOpen(true)} type='button' className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Create Task</button>
-                        </div>
-                        
+                    <div>
+                        <button onClick={()=>setIsModalOpen(true)} type='buttonzz' className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Add New</button>
                     </div>
                 </div>
  
@@ -34,32 +28,21 @@ export default function TaskList() {
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 font-semibold text-gray-900">Name</th>
-                                <th className="px-6 py-3 font-semibold text-gray-900">Priority</th>
-                                <th className="px-6 py-3 font-semibold text-gray-900">Due Date</th>
+                                <th className="px-6 py-3 font-semibold text-gray-900">Role</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                             <tr className="hover:bg-gray-50">
                                 <td className="px-6 py-4 font-medium text-gray-900">
-                                  <Link href={'/projects/1/tasks/1'}>Project 1</Link>
+                                  <Link href={'/projects/1'}>Suraj Kumar</Link>
                                 </td>
                                 <td className="px-6 py-4">
-                                  <Link href={'/projects/1/tasks/1'} className='text-red-600'>High</Link>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <Link href={'/projects/1/tasks/1'}>01/09/2026</Link>
+                                  <Link href={'/projects/1'}>Developer</Link>
                                 </td>
                             </tr>
                             <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 font-medium text-gray-900">
-                                  <Link href={'/projects/2/tasks/3'}>Project 1</Link>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <Link href={'/projects/2/tasks/3'} className='text-orange-600'>Low</Link>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <Link href={'/projects/2/tasks/3'}>03/09/2026</Link>
-                                </td>
+                                <td className="px-6 py-4 font-medium text-gray-900">Shreya</td>
+                                <td className="px-6 py-4 text-green-600">Designer</td>
                             </tr>
                         </tbody>
                     </table>
@@ -75,29 +58,18 @@ export default function TaskList() {
               <div className='w-full max-w-md p-4 border border-gray-200 rounded-lg bg-white shadow-xl'>
                   <form className='flex flex-col gap-4'>
                       <div className='flex flex-col gap-1'>
-                          <label className='text-sm font-medium text-gray-700'>Title</label>
+                          <label className='text-sm font-medium text-gray-700'>Full Name</label>
                           <input 
                               type='text' 
                               className='px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500' 
                           />
                       </div>
                       <div className='flex flex-col gap-1'>
-                          <label className='text-sm font-medium text-gray-700'>Detail</label>
-                          <textarea 
+                          <label className='text-sm font-medium text-gray-700'>Role</label>
+                          <input 
+                              type='text' 
                               className='px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                          ></textarea>
-                      </div>
-                      <div className='flex flex-col gap-1'>
-                          <label className='text-sm font-medium text-gray-700'>Priority</label>
-                          <select className='p-2 bg-gray-100 rounded-xl w-1/2'>
-                            <option>High</option>
-                            <option>Low</option>
-                            <option>Medium</option>
-                          </select>
-                      </div>
-                      <div className='flex flex-col gap-1'>
-                          <label className='text-sm font-medium text-gray-700'>Due Date</label>
-                          <input type='date' className='p-2 bg-gray-100 rounded-xl w-1/2' />
+                          />
                       </div>
                       <div className='flex justify-end gap-2'>
                           <button type='button' onClick={()=>setIsModalOpen(false)} className='text-black py-1 px-3 bg-gray-300 rounded-lg'>Cancel</button>

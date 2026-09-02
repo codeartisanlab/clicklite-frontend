@@ -1,5 +1,5 @@
 import React from 'react'
-import { LayoutDashboard, FolderKanban, SlidersHorizontal, LogOut } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, SlidersHorizontal, LogOut,Calendar,Users } from 'lucide-react';
 import Link from 'next/link';
 export default function Sidebar() {
   return (
@@ -15,6 +15,18 @@ export default function Sidebar() {
                     <Link href='/projects' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
                         <FolderKanban />
                         Projects
+                    </Link>
+                </li>
+                <li>
+                    <Link href='/calender' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
+                        <Calendar />
+                        Calender
+                    </Link>
+                </li>
+                <li>
+                    <Link href='/members' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
+                        <Users />
+                        Members
                     </Link>
                 </li>
                 <li>

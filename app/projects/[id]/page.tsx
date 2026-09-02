@@ -39,7 +39,7 @@ export default function ProjectDashboard() {
                 <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mt-5">
                     <div className='flex justify-between gap-3 items-center w-full'>
                         <h3 className='p-4 text-2xl'>Tasks Due</h3>
-                        <Link href={'projects/1/tasks'} className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer mr-3'>View All</Link>
+                        <Link href={'/projects/1/tasks'} className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer mr-3'>View All</Link>
                     </div>
                     <table className="w-full min-w-full divide-y divide-gray-200 bg-white text-left text-sm text-gray-500">
                         <thead className="bg-gray-50">
