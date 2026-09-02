@@ -19,7 +19,7 @@ export default function Members() {
                         <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Members</h2>
                     </div>
                     <div>
-                        <button onClick={()=>setIsModalOpen(true)} type='buttonzz' className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Add New</button>
+                        <button onClick={()=>setIsModalOpen(true)} type='button' className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Add New</button>
                     </div>
                 </div>
  
