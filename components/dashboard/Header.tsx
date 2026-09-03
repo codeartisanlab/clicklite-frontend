@@ -1,5 +1,6 @@
 import React from 'react'
 import { Bell,Settings } from 'lucide-react';
+import Link from 'next/link';
 export default function Header() {
   return (
     <header className='flex items-center justify-between p-5 border-b border-gray-200 h-16'>
@@ -15,10 +16,11 @@ export default function Header() {
         <div className='flex justify-end gap-5'>
             
             <div>
-                <Bell />
+                <Link href={'/notifications'}><Bell /></Link>
             </div>
             <div>
-                <Settings />
+                <Link href={'/auth/profile'}><Settings /></Link>
+                
             </div>
         </div>
     </header>
