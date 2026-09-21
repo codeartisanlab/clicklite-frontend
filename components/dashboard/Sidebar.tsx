@@ -1,8 +1,27 @@
+'use client';
+
 import React, { useState } from 'react'
 import { LayoutDashboard, FolderKanban, SlidersHorizontal, LogOut,Calendar,Users,User } from 'lucide-react';
 import Link from 'next/link';
+import { apiRequest } from '@/app/lib/api';
+import { useRouter } from 'next/navigation';
 export default function Sidebar() {
+
+    const router=useRouter();
     const [IsModalOpen,setIsModalOpen]=useState(false);
+
+    async function handleLogout() {
+        try {
+            await apiRequest("/api/auth/logout", {
+                method: "POST",
+            });
+            router.push("/auth/login");
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    }
+
+
   return (
     <aside className='w-64 border-r border-gray-200 min-h-screen'>
             <ul className='flex flex-col gap-2 p-3'>
@@ -58,13 +77,12 @@ export default function Sidebar() {
                       <p className='text-center text-3xl text-red-600'>Are you sure?</p>
                       <div className='flex justify-end gap-2'>
                           <button type='button' onClick={()=>setIsModalOpen(false)} className='text-black py-1 px-3 bg-gray-300 rounded-lg'>Cancel</button>
-                          <button className='text-white py-1 px-3 bg-black rounded-lg'>Yes</button>
+                          <button type='button' onClick={handleLogout} className='text-white py-1 px-3 bg-black rounded-lg'>Yes</button>
                       </div>
                   </form>
               </div>
           </div>
         }
-
         </aside>
   )
 }
