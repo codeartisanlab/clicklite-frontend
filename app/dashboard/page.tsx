@@ -2,10 +2,46 @@
 
 import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
-import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { apiRequest } from '../lib/api';
 
 export default function Dashboard() {
-    const [IsModalOpen,setIsModalOpen]=useState(false);
+    const router = useRouter();
+
+    const [user, setUser] = useState<{
+        id: string;
+        full_name: string;
+        email: string;
+    } | null>(null);
+
+    const [loading, setLoading] = useState(true);
+    const [IsModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        async function loadUser() {
+            try {
+                const data = await apiRequest('/api/auth/me');
+                setUser(data);
+            } catch (error) {
+                console.error('Authentication error:', error);
+
+                router.push('/auth/login');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadUser();
+    }, [router]);
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <p>Loading...</p>
+            </div>
+        );
+    }
   return (
     <div>
         <Header />
@@ -13,7 +49,7 @@ export default function Dashboard() {
             <Sidebar />
             <div className='flex flex-1 items-center justify-center'>
                 <div className='border-gray-200 border flex justify-center items-center flex-col gap-4 w-3xl p-5 shadow-md rounded-md'>
-                    <h2 className='text-2xl'>Welcome</h2>
+                    <h2 className='text-2xl'>Welcome {user?.full_name}</h2>
                     <p className='text-lg'>No workspace found</p>
                     <button onClick={()=>setIsModalOpen(true)} className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Create workspace</button>
                 </div>
