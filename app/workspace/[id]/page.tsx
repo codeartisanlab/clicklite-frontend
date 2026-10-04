@@ -1,10 +1,66 @@
 'use client';
 
+import { apiRequest } from '@/app/lib/api';
 import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
-
+import { useParams } from 'next/navigation';
+import { useState,useEffect } from 'react';
 
 export default function WorkspaceDashboard() {
+
+    type Workspace={
+        id:string,
+        name:string,
+        color:string,
+        owner_id:string
+    }
+
+    const [workspace, setWorkspace] = useState<Workspace | null>(null);
+    const [loading, setLoading] = useState(true);
+    
+    const params = useParams();
+    const workspaceId = params.id as string;
+
+    useEffect(() => {
+        async function loadWorkspace() {
+            try {
+                const data = await apiRequest(
+                    `/api/workspaces/${workspaceId}`
+                );
+
+                setWorkspace(data);
+            } catch (error) {
+                console.error(
+                    'Workspace loading error:',
+                    error
+                );
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        if (workspaceId) {
+            loadWorkspace();
+        }
+    }, [workspaceId]);
+
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <p>Loading workspace...</p>
+            </div>
+        );
+    }
+
+    if (!workspace) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <p>Workspace not found.</p>
+            </div>
+        );
+    }
+
   return (
     <div>
         <Header />
@@ -13,8 +69,14 @@ export default function WorkspaceDashboard() {
             <div className='flex flex-1 flex-col gap-4 p-5'>
 
                 <div className='flex justify-between w-full items-center'>
-                    <div>
-                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Workspace: ClickLite Development</h2>
+                    <div className='flex items-center gap-2'>
+                        <div
+                            className="h-4 w-4 rounded-full"
+                            style={{
+                                backgroundColor: workspace.color,
+                            }}
+                        />
+                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Workspace: {workspace.name}</h2>
                     </div>
                     <div>
                         <button className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Create Project</button>
