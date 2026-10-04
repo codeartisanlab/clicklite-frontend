@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from "next/navigation";
+
 type Workspace = {
     id: string;
     name: string;
@@ -15,9 +17,13 @@ export default function WorkspaceList({
     workspaces,
 }: WorkspaceListProps) {
 
+    const router=useRouter();
+
     if (workspaces.length === 0) {
         return null;
     }
+
+    
 
     return (
         <div className="w-full max-w-3xl">
@@ -52,7 +58,8 @@ export default function WorkspaceList({
 
                         <button
                             type="button"
-                            className="px-3 py-1.5 bg-black text-white rounded-lg text-sm"
+                            className="px-3 py-1.5 bg-black text-white rounded-lg text-sm cursor-pointer"
+                            onClick={()=>router.push(`/workspace/${workspace.id}`)}
                         >
                             Open
                         </button>
