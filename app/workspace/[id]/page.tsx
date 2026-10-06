@@ -24,6 +24,7 @@ export default function WorkspaceDashboard() {
         name: string;
         description: string | null;
         workspace_id: string;
+        workspace_name: string;
     };
 
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -245,13 +246,17 @@ export default function WorkspaceDashboard() {
         
         {isProjectModalOpen && (
             <CreateProjectModal
-                workspaceId={workspaceId}
+                workspaces={[
+                    {
+                        id: workspace.id,
+                        name: workspace.name,
+                        color: workspace.color,
+                    },
+                ]}
+                defaultWorkspaceId={workspace.id}
                 onClose={() => setIsProjectModalOpen(false)}
                 onCreated={(project) => {
-                    setProjects((current) => [
-                        ...current,
-                        project,
-                    ]);
+                    setProjects((current) => [project, ...current]);
                 }}
             />
         )}
