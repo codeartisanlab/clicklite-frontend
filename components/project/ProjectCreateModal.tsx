@@ -1,30 +1,42 @@
 'use client';
 
-import { useState, SubmitEvent } from 'react';
+import { SubmitEvent, useState } from 'react';
 import { apiRequest } from '@/app/lib/api';
+
+type Workspace = {
+    id: string;
+    name: string;
+    color: string;
+};
 
 type Project = {
     id: string;
     name: string;
     description: string | null;
     workspace_id: string;
+    workspace_name: string;
 };
 
 type CreateProjectModalProps = {
-    workspaceId: string;
+    workspaces: Workspace[];
+    defaultWorkspaceId?: string;
     onClose: () => void;
     onCreated: (project: Project) => void;
 };
 
 export default function CreateProjectModal({
-    workspaceId,
+    workspaces,
+    defaultWorkspaceId,
     onClose,
     onCreated,
 }: CreateProjectModalProps) {
-
     const [projectName, setProjectName] = useState('');
     const [description, setDescription] = useState('');
+    const [workspaceId, setWorkspaceId] = useState(
+        defaultWorkspaceId || ''
+    );
     const [creating, setCreating] = useState(false);
+    const [error, setError] = useState('');
 
     async function handleSubmit(
         event: SubmitEvent<HTMLFormElement>
@@ -32,11 +44,18 @@ export default function CreateProjectModal({
         event.preventDefault();
 
         if (!projectName.trim()) {
+            setError('Project name is required.');
+            return;
+        }
+
+        if (!workspaceId) {
+            setError('Please select a workspace.');
             return;
         }
 
         try {
             setCreating(true);
+            setError('');
 
             const project = await apiRequest('/api/projects', {
                 method: 'POST',
@@ -51,10 +70,15 @@ export default function CreateProjectModal({
 
             setProjectName('');
             setDescription('');
-            onClose();
+            setWorkspaceId(defaultWorkspaceId || '');
 
+            onClose();
         } catch (error) {
-            console.error('Create project error:', error);
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : 'Unable to create project.'
+            );
         } finally {
             setCreating(false);
         }
@@ -62,9 +86,9 @@ export default function CreateProjectModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-
             <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-xl">
 
+                {/* Header */}
                 <div className="mb-5 flex items-center justify-between">
                     <h2 className="text-xl font-semibold">
                         Create Project
@@ -84,6 +108,7 @@ export default function CreateProjectModal({
                     className="flex flex-col gap-4"
                 >
 
+                    {/* Project Name */}
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-medium text-gray-700">
                             Project Name
@@ -101,6 +126,7 @@ export default function CreateProjectModal({
                         />
                     </div>
 
+                    {/* Description */}
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-medium text-gray-700">
                             Description
@@ -117,8 +143,44 @@ export default function CreateProjectModal({
                         />
                     </div>
 
-                    <div className="flex justify-end gap-2">
+                    {/* Workspace */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium text-gray-700">
+                            Workspace
+                        </label>
 
+                        <select
+                            value={workspaceId}
+                            onChange={(event) =>
+                                setWorkspaceId(event.target.value)
+                            }
+                            className="rounded-md border border-gray-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        >
+                            <option value="">
+                                Select workspace
+                            </option>
+
+                            {workspaces.map((workspace) => (
+                                <option
+                                    key={workspace.id}
+                                    value={workspace.id}
+                                >
+                                    {workspace.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Error */}
+                    {error && (
+                        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+                            {error}
+                        </p>
+                    )}
+
+                    {/* Buttons */}
+                    <div className="flex justify-end gap-2">
                         <button
                             type="button"
                             onClick={onClose}
@@ -136,11 +198,8 @@ export default function CreateProjectModal({
                                 ? 'Creating...'
                                 : 'Create Project'}
                         </button>
-
                     </div>
-
                 </form>
-
             </div>
         </div>
     );
