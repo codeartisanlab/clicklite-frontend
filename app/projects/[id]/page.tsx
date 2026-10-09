@@ -1,10 +1,53 @@
 'use client';
 
+import { apiRequest } from '@/app/lib/api';
 import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Link from 'next/link';
+import { useRouter,useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ProjectDashboard() {
+
+    const router=useRouter();
+    
+    
+    type Project = {
+        id: string;
+        name: string;
+        description: string | null;
+        workspace_id: string;
+        workspace_name: string;
+    };
+
+    const [ProjectDetail, setProjectDetail] = useState<Project | null>(null);
+    const [projectLoading, setProjectLoading] = useState(true);
+
+    const params = useParams();
+    const projectId = params.id as string;
+
+    useEffect(() => {
+        async function loadProjects() {
+            try {
+                const data = await apiRequest(
+                    `/api/projects/detail/${projectId}`
+                );
+                setProjectDetail(data);
+            } catch (error) {
+                console.error(
+                    'Project loading error:',
+                    error
+                );
+            } finally {
+                setProjectLoading(false);
+            }
+        }
+
+        if (projectId) {
+            loadProjects();
+        }
+    }, [projectId]);
+
   return (
     <div>
         <Header />
@@ -14,7 +57,8 @@ export default function ProjectDashboard() {
 
                 <div className='flex justify-between w-full items-center'>
                     <div>
-                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Project: Project 1</h2>
+                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Project: {ProjectDetail?.name}</h2>
+                        <p className='text-sm text-gray-600 mt-2'>{ProjectDetail?.description}</p>
                     </div>
                     <div>
                         <button className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Create Task</button>
