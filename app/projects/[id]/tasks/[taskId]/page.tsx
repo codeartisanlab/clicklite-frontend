@@ -2,10 +2,47 @@
 
 import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { apiRequest } from '@/app/lib/api';
+
+type Task = {
+    id: string;
+    title: string;
+    description: string | null;
+    status: string;
+    project_id: string;
+};
 
 export default function TaskDetail() {
-    const [IsModalOpen,setIsModalOpen]=useState(false);
+    const params = useParams();
+    const projectId = params.id as string;
+    const taskId = params.taskId as string;
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [task, setTask] = useState<Task | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadTask() {
+            try {
+                const data = await apiRequest(
+                    `/api/projects/${projectId}/tasks/${taskId}`
+                );
+                setTask(data);
+            } catch (error) {
+                console.error('Task detail loading error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        if (projectId && taskId) {
+            loadTask();
+        }
+    }, [projectId, taskId]);
+
   return (
     <div>
         <Header />
@@ -15,10 +52,12 @@ export default function TaskDetail() {
 
                 <div className='flex justify-between w-full items-center'>
                     <div>
-                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Task: Task Detail</h2>
+                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>
+                            Task: {loading ? 'Loading...' : task?.title ?? 'Task not found'}
+                        </h2>
                     </div>
                     <div>
-                        <button className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>View All</button>
+                        <Link href={`/projects/${projectId}/tasks`} className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>View All</Link>
                     </div>
                 </div>
 
@@ -48,9 +87,14 @@ export default function TaskDetail() {
                                     <label className='text-sm font-medium text-gray-700'>Status</label>
                                 </div>
                                 <div>
-                                    <select className='p-2 bg-gray-100 rounded-xl w-full'>
-                                        <option>Progress</option>
-                                        <option>Completed</option>
+                                    <select
+                                        value={task?.status ?? 'todo'}
+                                        disabled
+                                        className='p-2 bg-gray-100 rounded-xl w-full'
+                                    >
+                                        <option value='todo'>To do</option>
+                                        <option value='in_progress'>In progress</option>
+                                        <option value='done'>Done</option>
                                     </select>
                                 </div>
                             </div>
@@ -84,7 +128,9 @@ export default function TaskDetail() {
                         </div>
 
                         <p className='text-md text-gray-700'>
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, rem vero? Totam esse pariatur aliquid saepe velit porro consectetur, laudantium odio iusto delectus quo minus a at, modi, vero culpa!
+                            {loading
+                                ? 'Loading task...'
+                                : task?.description || 'No description.'}
                         </p>
                     </div>
 
@@ -122,7 +168,7 @@ export default function TaskDetail() {
             </div>
 
             {/* Modal */}
-          {IsModalOpen &&
+          {isModalOpen &&
           <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs'>
               <div className='w-full max-w-md p-4 border border-gray-200 rounded-lg bg-white shadow-xl'>
                   <form className='flex flex-col gap-4'>
