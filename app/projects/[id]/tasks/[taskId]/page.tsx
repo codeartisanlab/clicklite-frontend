@@ -12,8 +12,21 @@ type Task = {
     title: string;
     description: string | null;
     status: string;
+    due_date: string | null;
     project_id: string;
 };
+
+function statusLabel(status: string) {
+    if (status === 'in_progress') {
+        return 'In progress';
+    }
+
+    if (status === 'done') {
+        return 'Done';
+    }
+
+    return 'To do';
+}
 
 export default function TaskDetail() {
     const params = useParams();
@@ -23,6 +36,9 @@ export default function TaskDetail() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [task, setTask] = useState<Task | null>(null);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
         async function loadTask() {
@@ -42,6 +58,51 @@ export default function TaskDetail() {
             loadTask();
         }
     }, [projectId, taskId]);
+
+    async function handleStatusChange(event: React.ChangeEvent<HTMLSelectElement>) {
+        if (!task) {
+            return;
+        }
+
+        const nextStatus = event.target.value;
+        const previousStatus = task.status;
+
+        setTask({
+            ...task,
+            status: nextStatus,
+        });
+        setMessage('');
+        setError('');
+
+        try {
+            setSaving(true);
+
+            const updated = await apiRequest(
+                `/api/projects/${projectId}/tasks/${taskId}`,
+                {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        status: nextStatus,
+                    }),
+                }
+            );
+
+            setTask(updated);
+            setMessage(`Status updated to ${statusLabel(updated.status)}.`);
+        } catch (error) {
+            setTask({
+                ...task,
+                status: previousStatus,
+            });
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : 'Unable to update status.'
+            );
+        } finally {
+            setSaving(false);
+        }
+    }
 
   return (
     <div>
@@ -75,11 +136,25 @@ export default function TaskDetail() {
                     </div>
                 </div>
 
-                {/* Detail */}
                 <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mt-5 p-4">
                     <div className='flex justify-between gap-3 items-center'>
                         <h3 className='text-2xl'>Details</h3>
                     </div>
+                    {saving && (
+                        <p className='mt-4 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-700'>
+                            Saving status...
+                        </p>
+                    )}
+                    {message && (
+                        <p className='mt-4 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700'>
+                            {message}
+                        </p>
+                    )}
+                    {error && (
+                        <p className='mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600'>
+                            {error}
+                        </p>
+                    )}
                     <div className='space-y-5 mt-5'>
                         <div className='gap-5 flex justify-between'>
                             <div className='flex justify-between w-1/4'>
@@ -89,7 +164,8 @@ export default function TaskDetail() {
                                 <div>
                                     <select
                                         value={task?.status ?? 'todo'}
-                                        disabled
+                                        onChange={handleStatusChange}
+                                        disabled={saving || !task}
                                         className='p-2 bg-gray-100 rounded-xl w-full'
                                     >
                                         <option value='todo'>To do</option>
@@ -137,7 +213,6 @@ export default function TaskDetail() {
                 </div>
 
 
-                {/* Comments */}
                 <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mt-5">
                     <div className='flex justify-between gap-3 items-center w-full'>
                         <h3 className='p-4 text-2xl'>Comments</h3>
@@ -167,7 +242,6 @@ export default function TaskDetail() {
                 </div>
             </div>
 
-            {/* Modal */}
           {isModalOpen &&
           <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs'>
               <div className='w-full max-w-md p-4 border border-gray-200 rounded-lg bg-white shadow-xl'>
