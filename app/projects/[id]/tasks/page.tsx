@@ -12,6 +12,8 @@ type Task = {
     title: string;
     description: string | null;
     status: string;
+    priority: string;
+    assignee: string | null;
     due_date: string | null;
     project_id: string;
 };
@@ -31,6 +33,30 @@ function isTaskDue(task: Task) {
     return task.due_date <= todayString();
 }
 
+function priorityLabel(priority: string) {
+    if (priority === 'high') {
+        return 'High';
+    }
+
+    if (priority === 'low') {
+        return 'Low';
+    }
+
+    return 'Medium';
+}
+
+function priorityClass(priority: string) {
+    if (priority === 'high') {
+        return 'text-red-600';
+    }
+
+    if (priority === 'low') {
+        return 'text-green-700';
+    }
+
+    return 'text-orange-600';
+}
+
 export default function TaskList() {
     const params = useParams();
     const searchParams = useSearchParams();
@@ -41,6 +67,8 @@ export default function TaskList() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('todo');
+    const [priority, setPriority] = useState('medium');
+    const [assignee, setAssignee] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState('');
@@ -88,6 +116,8 @@ export default function TaskList() {
                         title: title.trim(),
                         description: description.trim() || null,
                         status,
+                        priority,
+                        assignee: assignee.trim() || null,
                         due_date: dueDate || null,
                     }),
                 }
@@ -100,6 +130,8 @@ export default function TaskList() {
             setTitle('');
             setDescription('');
             setStatus('todo');
+            setPriority('medium');
+            setAssignee('');
             setDueDate('');
             setIsModalOpen(false);
         } catch (error) {
@@ -142,19 +174,20 @@ export default function TaskList() {
                                 <tr>
                                     <th className="px-6 py-3 font-semibold text-gray-900">Title</th>
                                     <th className="px-6 py-3 font-semibold text-gray-900">Status</th>
+                                    <th className="px-6 py-3 font-semibold text-gray-900">Priority</th>
                                     <th className="px-6 py-3 font-semibold text-gray-900">Due Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={3} className="px-6 py-6 text-center">
+                                        <td colSpan={4} className="px-6 py-6 text-center">
                                             Loading tasks...
                                         </td>
                                     </tr>
                                 ) : tasks.length === 0 ? (
                                     <tr>
-                                        <td colSpan={3} className="px-6 py-6 text-center text-gray-500">
+                                        <td colSpan={4} className="px-6 py-6 text-center text-gray-500">
                                             {dueOnly ? 'No tasks due.' : 'No tasks found.'}
                                         </td>
                                     </tr>
@@ -168,6 +201,9 @@ export default function TaskList() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 {task.status}
+                                            </td>
+                                            <td className={`px-6 py-4 font-medium ${priorityClass(task.priority)}`}>
+                                                {priorityLabel(task.priority)}
                                             </td>
                                             <td className="px-6 py-4">
                                                 {task.due_date || '-'}
@@ -214,6 +250,27 @@ export default function TaskList() {
                                     <option value='in_progress'>In progress</option>
                                     <option value='done'>Done</option>
                                 </select>
+                            </div>
+                            <div className='flex flex-col gap-1'>
+                                <label className='text-sm font-medium text-gray-700'>Priority</label>
+                                <select
+                                    value={priority}
+                                    onChange={(event) => setPriority(event.target.value)}
+                                    className='p-2 bg-gray-100 rounded-xl w-1/2'
+                                >
+                                    <option value='high'>High</option>
+                                    <option value='medium'>Medium</option>
+                                    <option value='low'>Low</option>
+                                </select>
+                            </div>
+                            <div className='flex flex-col gap-1'>
+                                <label className='text-sm font-medium text-gray-700'>Assignee</label>
+                                <input
+                                    type='text'
+                                    value={assignee}
+                                    onChange={(event) => setAssignee(event.target.value)}
+                                    className='px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                />
                             </div>
                             <div className='flex flex-col gap-1'>
                                 <label className='text-sm font-medium text-gray-700'>Due Date</label>
