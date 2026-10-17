@@ -18,6 +18,14 @@ type Task = {
     project_id: string;
 };
 
+type Comment = {
+    id: string;
+    body: string;
+    task_id: string;
+    author_name: string;
+    created_at: string;
+};
+
 function statusLabel(status: string) {
     if (status === 'in_progress') {
         return 'In progress';
@@ -66,6 +74,12 @@ export default function TaskDetail() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [commentsLoading, setCommentsLoading] = useState(true);
+    const [commentBody, setCommentBody] = useState('');
+    const [commentError, setCommentError] = useState('');
+    const [savingComment, setSavingComment] = useState(false);
+
     const progress = progressFor(task?.status ?? 'todo');
 
     useEffect(() => {
@@ -82,8 +96,22 @@ export default function TaskDetail() {
             }
         }
 
+        async function loadComments() {
+            try {
+                const data = await apiRequest(
+                    `/api/projects/${projectId}/tasks/${taskId}/comments`
+                );
+                setComments(data);
+            } catch (error) {
+                console.error('Comment loading error:', error);
+            } finally {
+                setCommentsLoading(false);
+            }
+        }
+
         if (projectId && taskId) {
             loadTask();
+            loadComments();
         }
     }, [projectId, taskId]);
 
@@ -168,6 +196,42 @@ export default function TaskDetail() {
             },
             'Task details saved.',
         );
+    }
+
+    async function handleCreateComment(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        if (!commentBody.trim()) {
+            setCommentError('Comment is required.');
+            return;
+        }
+
+        try {
+            setSavingComment(true);
+            setCommentError('');
+
+            const comment = await apiRequest(
+                `/api/projects/${projectId}/tasks/${taskId}/comments`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        body: commentBody.trim(),
+                    }),
+                }
+            );
+
+            setComments((current) => [comment, ...current]);
+            setCommentBody('');
+            setIsModalOpen(false);
+        } catch (error) {
+            setCommentError(
+                error instanceof Error
+                    ? error.message
+                    : 'Unable to add comment.'
+            );
+        } finally {
+            setSavingComment(false);
+        }
     }
 
     return (
@@ -322,7 +386,6 @@ export default function TaskDetail() {
                         <div className='flex justify-between gap-3 items-center w-full'>
                             <h3 className='p-4 text-2xl'>Comments</h3>
                             <div>
-                                <button className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer mr-3'>View All</button>
                                 <button onClick={() => setIsModalOpen(true)} className='bg-green-600 hover:bg-green-800 text-white p-2 rounded-lg cursor-pointer mr-3'>Add New</button>
                             </div>
                         </div>
@@ -334,14 +397,26 @@ export default function TaskDetail() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900">Comment 1</td>
-                                    <td className="px-6 py-4 font-medium text-gray-900">Suraj Kumar</td>
-                                </tr>
-                                <tr className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900">Comment 1</td>
-                                    <td className="px-6 py-4 font-medium text-gray-900">Suraj Kumar</td>
-                                </tr>
+                                {commentsLoading ? (
+                                    <tr>
+                                        <td colSpan={2} className="px-6 py-6 text-center">
+                                            Loading comments...
+                                        </td>
+                                    </tr>
+                                ) : comments.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={2} className="px-6 py-6 text-center text-gray-500">
+                                            No comments yet.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    comments.map((comment) => (
+                                        <tr key={comment.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 font-medium text-gray-900">{comment.body}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{comment.author_name}</td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -350,16 +425,23 @@ export default function TaskDetail() {
                 {isModalOpen &&
                     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs'>
                         <div className='w-full max-w-md p-4 border border-gray-200 rounded-lg bg-white shadow-xl'>
-                            <form className='flex flex-col gap-4'>
+                            <form onSubmit={handleCreateComment} className='flex flex-col gap-4'>
                                 <div className='flex flex-col gap-1'>
-                                    <label className='text-sm font-medium text-gray-700'>Detail</label>
+                                    <label className='text-sm font-medium text-gray-700'>Comment</label>
                                     <textarea
+                                        value={commentBody}
+                                        onChange={(event) => setCommentBody(event.target.value)}
                                         className='px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                                     ></textarea>
                                 </div>
+                                {commentError && (
+                                    <p className='text-sm text-red-600'>{commentError}</p>
+                                )}
                                 <div className='flex justify-end gap-2'>
                                     <button type='button' onClick={() => setIsModalOpen(false)} className='text-black py-1 px-3 bg-gray-300 rounded-lg'>Cancel</button>
-                                    <button className='text-white py-1 px-3 bg-black rounded-lg'>Save</button>
+                                    <button type='submit' disabled={savingComment} className='text-white py-1 px-3 bg-black rounded-lg'>
+                                        {savingComment ? 'Saving...' : 'Save'}
+                                    </button>
                                 </div>
                             </form>
                         </div>
