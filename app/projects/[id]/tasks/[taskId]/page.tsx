@@ -4,7 +4,7 @@ import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { apiRequest } from '@/app/lib/api';
 
 type Task = {
@@ -64,6 +64,7 @@ function progressFor(status: string) {
 
 export default function TaskDetail() {
     const params = useParams();
+    const router=useRouter;
     const projectId = params.id as string;
     const taskId = params.taskId as string;
 
@@ -185,12 +186,14 @@ export default function TaskDetail() {
     }
 
     function handleSaveDetails() {
-        if (!task) {
+        if (!task || !task.title.trim()) {
+            setError('Title is required.');
             return;
         }
 
         saveTask(
             {
+                title: task.title.trim(),
                 description: task.description?.trim() || null,
                 assignee: task.assignee?.trim() || null,
             },
@@ -234,6 +237,30 @@ export default function TaskDetail() {
         }
     }
 
+    async function handleDeleteTask() {
+        if (!task) {
+            return;
+        }
+
+        if (!window.confirm('Delete this task and its comments?')) {
+            return;
+        }
+
+        try {
+            await apiRequest(
+                `/api/projects/${projectId}/tasks/${taskId}`,
+                { method: 'DELETE' }
+            );
+            router.push(`/projects/${projectId}/tasks`);
+        } catch (deleteError) {
+            setError(
+                deleteError instanceof Error
+                    ? deleteError.message
+                    : 'Unable to delete task.'
+            );
+        }
+    }
+
     return (
         <div>
             <Header />
@@ -247,7 +274,14 @@ export default function TaskDetail() {
                                 Task: {loading ? 'Loading...' : task?.title ?? 'Task not found'}
                             </h2>
                         </div>
-                        <div>
+                        <div className='flex gap-2'>
+                            <button
+                                type='button'
+                                onClick={handleDeleteTask}
+                                className='bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg cursor-pointer'
+                            >
+                                Delete
+                            </button>
                             <Link href={`/projects/${projectId}/tasks`} className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>View All</Link>
                         </div>
                     </div>
@@ -331,6 +365,26 @@ export default function TaskDetail() {
                                     />
                                 </div>
                             </div>
+
+                            <div className='flex flex-col gap-1'>
+                                <label className='text-sm font-medium text-gray-700'>Title</label>
+                                <input
+                                    type='text'
+                                    value={task?.title ?? ''}
+                                    onChange={(event) => {
+                                        if (!task) {
+                                            return;
+                                        }
+
+                                        setTask({
+                                            ...task,
+                                            title: event.target.value,
+                                        });
+                                    }}
+                                    className='px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                />
+                            </div>
+
                             <div className='flex flex-col gap-1'>
                                 <label className='text-sm font-medium text-gray-700'>Assignee</label>
                                 <input

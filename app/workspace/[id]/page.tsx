@@ -100,6 +100,39 @@ export default function WorkspaceDashboard() {
         );
     }
 
+
+    async function saveWorkspace() {
+        if (!workspace || workspace.name.trim().length < 2) {
+            return;
+        }
+
+        const updated = await apiRequest(
+            `/api/workspaces/${workspaceId}`,
+            {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    name: workspace.name.trim(),
+                    color: workspace.color,
+                }),
+            }
+        );
+
+        setWorkspace(updated);
+    }
+
+    async function deleteWorkspace() {
+        if (!window.confirm('Delete this workspace and everything inside it?')) {
+            return;
+        }
+
+        await apiRequest(
+            `/api/workspaces/${workspaceId}`,
+            { method: 'DELETE' }
+        );
+
+        router.push('/dashboard');
+    }
+
   return (
     <div>
         <Header />
@@ -107,16 +140,26 @@ export default function WorkspaceDashboard() {
             <Sidebar />
             <div className='flex flex-1 flex-col gap-4 p-5'>
 
-                <div className='flex justify-between w-full items-center'>
-                    <div className='flex items-center gap-2'>
-                        <div
-                            className="h-4 w-4 rounded-full"
-                            style={{
-                                backgroundColor: workspace.color,
-                            }}
-                        />
-                        <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Workspace: {workspace.name}</h2>
-                    </div>
+                <div className='flex items-center gap-2'>
+                    <input
+                        type='color'
+                        value={workspace.color}
+                        onChange={(event) =>
+                            setWorkspace({ ...workspace, color: event.target.value })
+                        }
+                    />
+                    <input
+                        type='text'
+                        value={workspace.name}
+                        onChange={(event) =>
+                            setWorkspace({ ...workspace, name: event.target.value })
+                        }
+                        className='text-2xl font-semibold border-b border-gray-200 pb-1 bg-transparent focus:outline-none'
+                    />
+                </div>
+                <div className='flex gap-2'>
+                    <button type='button' onClick={saveWorkspace} className='bg-black text-white p-2 rounded-lg'>Save</button>
+                    <button type='button' onClick={deleteWorkspace} className='bg-red-600 text-white p-2 rounded-lg'>Delete</button>
                 </div>
 
                 <div className='flex gap-3 mt-5'>
