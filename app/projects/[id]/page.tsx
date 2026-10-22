@@ -140,6 +140,39 @@ export default function ProjectDashboard() {
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
     .slice(0, 5);
 
+
+async function saveProject() {
+    if (!ProjectDetail || ProjectDetail.name.trim().length < 2) {
+        return;
+    }
+
+    const updated = await apiRequest(
+        `/api/projects/detail/${projectId}`,
+        {
+            method: 'PATCH',
+            body: JSON.stringify({
+                name: ProjectDetail.name.trim(),
+                description: ProjectDetail.description?.trim() || null,
+            }),
+        }
+    );
+
+    setProjectDetail(updated);
+}
+
+async function deleteProject() {
+    if (!window.confirm('Delete this project and its tasks?')) {
+        return;
+    }
+
+    await apiRequest(
+        `/api/projects/detail/${projectId}`,
+        { method: 'DELETE' }
+    );
+
+    router.push('/projects');
+}
+
     return (
         <div>
             <Header />
@@ -149,9 +182,41 @@ export default function ProjectDashboard() {
 
                     <div className='flex justify-between w-full items-center'>
                         <div>
-                            <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Project: {ProjectDetail?.name}</h2>
-                            <p className='text-sm text-gray-600 mt-2'>{ProjectDetail?.description}</p>
-                        </div>
+                                <input
+                                    type='text'
+                                    value={ProjectDetail?.name ?? ''}
+                                    onChange={(event) => {
+                                        if (!ProjectDetail) {
+                                            return;
+                                        }
+
+                                        setProjectDetail({
+                                            ...ProjectDetail,
+                                            name: event.target.value,
+                                        });
+                                    }}
+                                    className='text-2xl font-semibold border-b border-gray-200 pb-1 bg-transparent focus:outline-none'
+                                />
+                                <textarea
+                                    value={ProjectDetail?.description ?? ''}
+                                    onChange={(event) => {
+                                        if (!ProjectDetail) {
+                                            return;
+                                        }
+
+                                        setProjectDetail({
+                                            ...ProjectDetail,
+                                            description: event.target.value,
+                                        });
+                                    }}
+                                    rows={2}
+                                    className='mt-2 w-full text-sm text-gray-600 bg-transparent focus:outline-none'
+                                />
+                                <div className='mt-3 flex gap-2'>
+                                    <button type='button' onClick={saveProject} className='bg-black text-white p-2 rounded-lg'>Save</button>
+                                    <button type='button' onClick={deleteProject} className='bg-red-600 text-white p-2 rounded-lg'>Delete</button>
+                                </div>
+                            </div>
                         <div>
                             <Link href={`/projects/${projectId}/tasks`} className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer'>Create Task</Link>
                         </div>
