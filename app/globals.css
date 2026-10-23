@@ -1,1 +1,71 @@
 @import "tailwindcss";
+
+html.dark {
+    color-scheme: dark;
+    background-color: #0b1120;
+    color: #e5e7eb;
+}
+
+html.dark body {
+    background-color: #0b1120;
+    color: #e5e7eb;
+}
+
+html.dark .bg-white {
+    background-color: #111827;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-gray-100 {
+    background-color: #1f2937;
+}
+
+html.dark .bg-gray-300 {
+    background-color: #374151;
+}
+
+html.dark .text-gray-900,
+html.dark .text-black {
+    color: #f9fafb;
+}
+
+html.dark .text-gray-700 {
+    color: #e5e7eb;
+}
+
+html.dark .text-gray-500,
+html.dark .text-gray-400 {
+    color: #9ca3af;
+}
+
+html.dark .border-gray-200,
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #374151;
+}
+
+html.dark .border-gray-300,
+html.dark .border-gray-400 {
+    border-color: #4b5563;
+}
+
+html.dark .bg-black {
+    background-color: #e5e7eb;
+    color: #111827;
+}
+
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-gray-300:hover {
+    background-color: #374151;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+    background-color: #1f2937;
+    color: #f9fafb;
+    border-color: #4b5563;
+}
+
+html.dark input:disabled {
+    color: #9ca3af;
+}
