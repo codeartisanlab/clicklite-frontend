@@ -73,6 +73,11 @@ export default function Login(){
                         <label>Password</label>
                         <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="border border-blue-300 rounded-md p-1" />
                     </div>
+                    <div className="text-right">
+                        <Link href="/auth/forgot-password" className="text-sm text-blue-600">
+                            Forgot password?
+                        </Link>
+                    </div>
                     <div className="mt-3 text-center">
                         <button type="submit" disabled={loading} className="bg-blue-500 py-2 px-1 w-full rounded-md text-white hover:bg-blue-600">{loading ? "Loading...":'Submit'}</button>
                         {error && (
