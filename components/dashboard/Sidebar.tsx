@@ -50,7 +50,7 @@ export default function Sidebar() {
                     </Link>
                 </li>
                 <li>
-                    <Link href='#' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
+                    <Link href='/settings' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
                         <SlidersHorizontal />
                         Settings
                     </Link>
