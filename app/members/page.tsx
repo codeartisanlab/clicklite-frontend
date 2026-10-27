@@ -18,6 +18,7 @@ type Member = {
 };
 
 export default function Members() {
+    const [message, setMessage] = useState('');
     const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
     const [workspaceId, setWorkspaceId] = useState('');
     const [members, setMembers] = useState<Member[]>([]);
@@ -64,6 +65,7 @@ export default function Members() {
         }
     }, [workspaceId]);
 
+    
     async function handleInvite(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
@@ -76,7 +78,7 @@ export default function Members() {
             setSaving(true);
             setError('');
 
-            const member = await apiRequest(
+            await apiRequest(
                 `/api/workspaces/${workspaceId}/members`,
                 {
                     method: 'POST',
@@ -87,10 +89,11 @@ export default function Members() {
                 }
             );
 
-            setMembers((current) => [...current, member]);
             setEmail('');
             setRole('member');
             setIsModalOpen(false);
+            setMessage('Invitation sent. Open the link in the API console.');
+
         } catch (inviteError) {
             setError(
                 inviteError instanceof Error
@@ -110,6 +113,7 @@ export default function Members() {
                 <div className='flex flex-1 flex-col gap-4 p-5'>
                     <div className='flex justify-between w-full items-center'>
                         <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Members</h2>
+                        {message && <p className='text-sm text-green-600'>{message}</p>}
                         <button
                             type='button'
                             onClick={() => setIsModalOpen(true)}
