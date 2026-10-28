@@ -12,6 +12,14 @@ export default function WorkspaceDashboard() {
 
     const router=useRouter();
 
+    type Activity = {
+        id: string;
+        user_name: string;
+        message: string;
+        link: string;
+        created_at: string;
+    };
+
     type Workspace={
         id:string,
         name:string,
@@ -30,12 +38,33 @@ export default function WorkspaceDashboard() {
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const [activities, setActivities] = useState<Activity[]>([]);
+
     const [projects, setProjects] = useState<Project[]>([]);
     const [projectLoading, setProjectLoading] = useState(true);
     const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
     
     const params = useParams();
     const workspaceId = params.id as string;
+
+
+    useEffect(() => {
+        async function loadActivity() {
+            try {
+                const data = await apiRequest(
+                    `/api/workspaces/${workspaceId}/activity`
+                );
+
+                setActivities(data);
+            } catch (error) {
+                console.error('Activity loading error:', error);
+            }
+        }
+
+        if (workspaceId) {
+            loadActivity();
+        }
+    }, [workspaceId]);
 
     useEffect(() => {
         async function loadWorkspace() {
@@ -254,34 +283,40 @@ export default function WorkspaceDashboard() {
 
                 {/* Recent Activity */}
                 <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mt-5">
-                    <div className='flex justify-between gap-3 items-center w-full'>
-                        <h3 className='p-4 text-2xl'>Recent Activity</h3>
-                        <button className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer mr-3'>View All</button>
-                    </div>
-                    <table className="w-full min-w-full divide-y divide-gray-200 bg-white text-left text-sm text-gray-500">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 font-semibold text-gray-900">Name</th>
-                                <th className="px-6 py-3 font-semibold text-gray-900">Role</th>
-                                <th className="px-6 py-3 font-semibold text-gray-900">Email</th>
-                                <th className="px-6 py-3 font-semibold text-gray-900">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 font-medium text-gray-900">Jane Doe</td>
-                                <td className="px-6 py-4">Software Engineer</td>
-                                <td className="px-6 py-4">jane@example.com</td>
-                                <td className="px-6 py-4 text-emerald-600">Active</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 font-medium text-gray-900">Alex Smith</td>
-                                <td className="px-6 py-4">Product Designer</td>
-                                <td className="px-6 py-4">alex@example.com</td>
-                                <td className="px-6 py-4 text-amber-600">Pending</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <h3 className="p-4 text-2xl">Recent Activity</h3>
+
+                    {activities.length === 0 ? (
+                        <div className="p-6">
+                            <p className="text-gray-500">No activity yet.</p>
+                        </div>
+                    ) : (
+                        <table className="w-full min-w-full divide-y divide-gray-200 bg-white text-left text-sm text-gray-500">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 font-semibold text-gray-900">Name</th>
+                                    <th className="px-6 py-3 font-semibold text-gray-900">Activity</th>
+                                    <th className="px-6 py-3 font-semibold text-gray-900">When</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {activities.map((activity) => (
+                                    <tr
+                                        key={activity.id}
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() => router.push(activity.link)}
+                                    >
+                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                            {activity.user_name}
+                                        </td>
+                                        <td className="px-6 py-4">{activity.message}</td>
+                                        <td className="px-6 py-4">
+                                            {new Date(activity.created_at).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
             </div>
