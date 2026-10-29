@@ -16,6 +16,7 @@ type Task = {
     assignee: string | null;
     due_date: string | null;
     project_id: string;
+    label:string|null
 };
 
 function todayString() {
@@ -76,25 +77,59 @@ export default function TaskList() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function loadTasks() {
-            try {
-                const endpoint = dueOnly
-                    ? `/api/projects/${projectId}/tasks?due=true`
-                    : `/api/projects/${projectId}/tasks`;
-                const data = await apiRequest(endpoint);
-                setTasks(data);
-            } catch (error) {
-                console.error('Task loading error:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
+    const [label, setLabel] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [priorityFilter, setPriorityFilter] = useState('');
+    const [labelFilter, setLabelFilter] = useState('');
+    const [assigneeFilter, setAssigneeFilter] = useState('');
+    const [weekOnly, setWeekOnly] = useState(false);
 
-        if (projectId) {
-            loadTasks();
+useEffect(() => {
+    async function loadTasks() {
+        try {
+            const params = new URLSearchParams();
+
+            if (dueOnly) {
+                params.set('due', 'true');
+            }
+
+            if (weekOnly) {
+                params.set('week', 'true');
+            }
+
+            if (statusFilter) {
+                params.set('status', statusFilter);
+            }
+
+            if (priorityFilter) {
+                params.set('priority', priorityFilter);
+            }
+
+            if (labelFilter) {
+                params.set('label', labelFilter);
+            }
+
+            if (assigneeFilter.trim()) {
+                params.set('assignee', assigneeFilter.trim());
+            }
+
+            const query = params.toString();
+            const endpoint = query
+                ? `/api/projects/${projectId}/tasks?${query}`
+                : `/api/projects/${projectId}/tasks`;
+            const data = await apiRequest(endpoint);
+            setTasks(data);
+        } catch (error) {
+            console.error('Task loading error:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [projectId, dueOnly]);
+    }
+
+    if (projectId) {
+        loadTasks();
+    }
+}, [projectId, dueOnly, weekOnly, statusFilter, priorityFilter, labelFilter, assigneeFilter]);
 
     async function handleCreateTask(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -119,6 +154,7 @@ export default function TaskList() {
                         priority,
                         assignee: assignee.trim() || null,
                         due_date: dueDate || null,
+                        label: label || null,
                     }),
                 }
             );
@@ -128,6 +164,7 @@ export default function TaskList() {
             }
 
             setTitle('');
+            setLabel('');
             setDescription('');
             setStatus('todo');
             setPriority('medium');
@@ -168,6 +205,55 @@ export default function TaskList() {
                         </div>
                     </div>
 
+
+                    <div className='flex flex-wrap gap-3'>
+                        <select
+                            value={statusFilter}
+                            onChange={(event) => setStatusFilter(event.target.value)}
+                            className='p-2 bg-gray-100 rounded-xl'
+                        >
+                            <option value=''>All statuses</option>
+                            <option value='todo'>To do</option>
+                            <option value='in_progress'>In progress</option>
+                            <option value='done'>Done</option>
+                        </select>
+                        <select
+                            value={priorityFilter}
+                            onChange={(event) => setPriorityFilter(event.target.value)}
+                            className='p-2 bg-gray-100 rounded-xl'
+                        >
+                            <option value=''>All priorities</option>
+                            <option value='high'>High</option>
+                            <option value='medium'>Medium</option>
+                            <option value='low'>Low</option>
+                        </select>
+                        <select
+                            value={labelFilter}
+                            onChange={(event) => setLabelFilter(event.target.value)}
+                            className='p-2 bg-gray-100 rounded-xl'
+                        >
+                            <option value=''>All labels</option>
+                            <option value='bug'>Bug</option>
+                            <option value='feature'>Feature</option>
+                            <option value='design'>Design</option>
+                        </select>
+                        <input
+                            type='text'
+                            value={assigneeFilter}
+                            onChange={(event) => setAssigneeFilter(event.target.value)}
+                            placeholder='Assignee'
+                            className='px-3 py-2 border border-gray-300 rounded-xl'
+                        />
+                        <label className='flex items-center gap-2 text-sm text-gray-700'>
+                            <input
+                                type='checkbox'
+                                checked={weekOnly}
+                                onChange={(event) => setWeekOnly(event.target.checked)}
+                            />
+                            Due this week
+                        </label>
+                    </div>
+
                     <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
                         <table className="w-full min-w-full divide-y divide-gray-200 bg-white text-left text-sm text-gray-500">
                             <thead className="bg-gray-50">
@@ -175,19 +261,20 @@ export default function TaskList() {
                                     <th className="px-6 py-3 font-semibold text-gray-900">Title</th>
                                     <th className="px-6 py-3 font-semibold text-gray-900">Status</th>
                                     <th className="px-6 py-3 font-semibold text-gray-900">Priority</th>
+                                    <th className="px-6 py-3 font-semibold text-gray-900">Label</th>
                                     <th className="px-6 py-3 font-semibold text-gray-900">Due Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-6 text-center">
+                                        <td colSpan={5} className="px-6 py-6 text-center">
                                             Loading tasks...
                                         </td>
                                     </tr>
                                 ) : tasks.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-6 text-center text-gray-500">
+                                        <td colSpan={5} className="px-6 py-6 text-center text-gray-500">
                                             {dueOnly ? 'No tasks due.' : 'No tasks found.'}
                                         </td>
                                     </tr>
@@ -204,6 +291,9 @@ export default function TaskList() {
                                             </td>
                                             <td className={`px-6 py-4 font-medium ${priorityClass(task.priority)}`}>
                                                 {priorityLabel(task.priority)}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {task.label || '-'}
                                             </td>
                                             <td className="px-6 py-4">
                                                 {task.due_date || '-'}
@@ -263,6 +353,21 @@ export default function TaskList() {
                                     <option value='low'>Low</option>
                                 </select>
                             </div>
+
+                            <div className='flex flex-col gap-1'>
+                                <label className='text-sm font-medium text-gray-700'>Label</label>
+                                <select
+                                    value={label}
+                                    onChange={(event) => setLabel(event.target.value)}
+                                    className='p-2 bg-gray-100 rounded-xl w-1/2'
+                                >
+                                    <option value=''>None</option>
+                                    <option value='bug'>Bug</option>
+                                    <option value='feature'>Feature</option>
+                                    <option value='design'>Design</option>
+                                </select>
+                            </div>
+
                             <div className='flex flex-col gap-1'>
                                 <label className='text-sm font-medium text-gray-700'>Assignee</label>
                                 <input

@@ -16,6 +16,7 @@ type Task = {
     assignee: string | null;
     due_date: string | null;
     project_id: string;
+    label:string|null;
 };
 
 type Comment = {
@@ -173,6 +174,14 @@ export default function TaskDetail() {
         saveTask(
             { priority: nextPriority },
             `Priority updated to ${priorityLabel(nextPriority)}.`,
+        );
+    }
+
+    function handleLabelChange(event: React.ChangeEvent<HTMLSelectElement>) {
+        const nextLabel = event.target.value;
+        saveTask(
+            { label: nextLabel || null },
+            nextLabel ? 'Label updated.' : 'Label removed.',
         );
     }
 
@@ -353,6 +362,24 @@ export default function TaskDetail() {
                                     </select>
                                 </div>
                             </div>
+
+                            <div className='gap-5 flex justify-between'>
+                                <div className='flex items-center justify-between w-1/2 gap-4'>
+                                    <label className='text-sm font-medium text-gray-700'>Label</label>
+                                    <select
+                                        value={task?.label ?? ''}
+                                        onChange={handleLabelChange}
+                                        disabled={saving || !task}
+                                        className='p-2 bg-gray-100 rounded-xl'
+                                    >
+                                        <option value=''>None</option>
+                                        <option value='bug'>Bug</option>
+                                        <option value='feature'>Feature</option>
+                                        <option value='design'>Design</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div className='gap-5 flex justify-between'>
                                 <div className='flex items-center justify-between w-1/2 gap-4'>
                                     <label className='text-sm font-medium text-gray-700'>Due Date</label>
