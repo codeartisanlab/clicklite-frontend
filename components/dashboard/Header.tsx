@@ -163,6 +163,37 @@ export default function Header() {
         };
     }, [pathname]);
 
+
+    useEffect(() => {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+        if (!apiUrl) {
+            return;
+        }
+
+        const socket = new WebSocket(
+            `${apiUrl.replace(/^http/, 'ws')}/api/notifications/ws`
+        );
+
+        socket.onmessage = (event) => {
+            const notification = JSON.parse(event.data);
+
+            if (!notification.is_read) {
+                setUnreadCount((count) => count + 1);
+            }
+
+            window.dispatchEvent(
+                new CustomEvent('notification-received', {
+                    detail: notification,
+                })
+            );
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, []);
+
     return (
         <header className='flex items-center justify-between p-5 border-b border-gray-200 h-16'>
             <div className='w-64 flex items-center gap-3'>

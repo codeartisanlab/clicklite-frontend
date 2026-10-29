@@ -41,6 +41,20 @@ export default function Notifications() {
         loadNotifications();
     }, []);
 
+    useEffect(() => {
+        function onReceived(event: Event) {
+            const notification = (event as CustomEvent<Notification>).detail;
+
+            setNotifications((current) => [notification, ...current]);
+        }
+
+        window.addEventListener('notification-received', onReceived);
+
+        return () => {
+            window.removeEventListener('notification-received', onReceived);
+        };
+    }, []);
+
     async function openNotification(notification: Notification) {
         try {
             if (!notification.is_read) {
