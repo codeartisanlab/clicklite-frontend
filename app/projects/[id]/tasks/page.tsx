@@ -84,6 +84,43 @@ export default function TaskList() {
     const [assigneeFilter, setAssigneeFilter] = useState('');
     const [weekOnly, setWeekOnly] = useState(false);
 
+
+    const [sentence, setSentence] = useState('');
+    const [filling, setFilling] = useState(false);
+
+
+    async function fillFromSentence() {
+        if (sentence.trim().length < 3) {
+            setError('Describe the task in one sentence.');
+            return;
+        }
+
+        try {
+            setFilling(true);
+            setError('');
+
+            const draft = await apiRequest('/api/ai/task', {
+                method: 'POST',
+                body: JSON.stringify({
+                    sentence: sentence.trim(),
+                }),
+            });
+
+            setTitle(draft.title);
+            setDescription(draft.description || '');
+            setPriority(draft.priority || 'medium');
+            setDueDate(draft.due_date || '');
+        } catch (fillError) {
+            setError(
+                fillError instanceof Error
+                    ? fillError.message
+                    : 'Unable to fill the task.'
+            );
+        } finally {
+            setFilling(false);
+        }
+    }
+
 useEffect(() => {
     async function loadTasks() {
         try {
@@ -170,6 +207,7 @@ useEffect(() => {
             setPriority('medium');
             setAssignee('');
             setDueDate('');
+            setSentence('');
             setIsModalOpen(false);
         } catch (error) {
             setError(
@@ -312,6 +350,24 @@ useEffect(() => {
                 <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs'>
                     <div className='w-full max-w-md p-4 border border-gray-200 rounded-lg bg-white shadow-xl'>
                         <form onSubmit={handleCreateTask} className='flex flex-col gap-4'>
+
+                            <div className='flex flex-col gap-1'>
+                                <label className='text-sm font-medium text-gray-700'>One sentence</label>
+                                <textarea
+                                    value={sentence}
+                                    onChange={(event) => setSentence(event.target.value)}
+                                    className='px-3 py-1 border border-gray-300 rounded-md'
+                                />
+                                <button
+                                    type='button'
+                                    onClick={fillFromSentence}
+                                    disabled={filling}
+                                    className='self-start text-white py-1 px-3 bg-black rounded-lg'
+                                >
+                                    {filling ? 'Filling...' : 'Fill the form'}
+                                </button>
+                            </div>
+
                             <div className='flex flex-col gap-1'>
                                 <label className='text-sm font-medium text-gray-700'>Title</label>
                                 <input
