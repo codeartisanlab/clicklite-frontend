@@ -82,6 +82,11 @@ export default function TaskDetail() {
     const [commentError, setCommentError] = useState('');
     const [savingComment, setSavingComment] = useState(false);
 
+
+    const [note, setNote] = useState('');
+    const [summarizing, setSummarizing] = useState(false);
+    const [summaryError, setSummaryError] = useState('');
+
     const progress = progressFor(task?.status ?? 'todo');
 
     useEffect(() => {
@@ -267,6 +272,37 @@ export default function TaskDetail() {
                     ? deleteError.message
                     : 'Unable to delete task.'
             );
+        }
+    }
+
+
+    async function summarizeComments() {
+        if (comments.length === 0) {
+            setSummaryError('Add a comment first.');
+            return;
+        }
+
+        try {
+            setSummarizing(true);
+            setSummaryError('');
+
+            const data = await apiRequest('/api/ai/comments/summary', {
+                method: 'POST',
+                body: JSON.stringify({
+                    project_id: projectId,
+                    task_id: taskId,
+                }),
+            });
+
+            setNote(data.note);
+        } catch (summaryProblem) {
+            setSummaryError(
+                summaryProblem instanceof Error
+                    ? summaryProblem.message
+                    : 'Unable to summarize the comments.'
+            );
+        } finally {
+            setSummarizing(false);
         }
     }
 
@@ -462,14 +498,33 @@ export default function TaskDetail() {
                             </div>
                         </div>
                     </div>
+                    
 
-                    <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mt-5">
+                    <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mt-5"> 
+
+                        <button
+                            type="button"
+                            onClick={summarizeComments}
+                            disabled={summarizing}
+                            className='bg-black text-white p-2 rounded-lg cursor-pointer mr-3 disabled:opacity-50'
+                        >
+                            {summarizing ? 'Summarizing...' : 'Summarize'}
+                        </button>
+
                         <div className='flex justify-between gap-3 items-center w-full'>
                             <h3 className='p-4 text-2xl'>Comments</h3>
                             <div>
                                 <button onClick={() => setIsModalOpen(true)} className='bg-green-600 hover:bg-green-800 text-white p-2 rounded-lg cursor-pointer mr-3'>Add New</button>
                             </div>
                         </div>
+                        
+                        {note && (
+                            <p className='px-4 pb-4 text-gray-800'>{note}</p>
+                        )}
+                        {summaryError && (
+                            <p className='px-4 pb-4 text-sm text-red-600'>{summaryError}</p>
+                        )}
+
                         <table className="w-full min-w-full divide-y divide-gray-200 bg-white text-left text-sm text-gray-500">
                             <thead className="bg-gray-50">
                                 <tr>
