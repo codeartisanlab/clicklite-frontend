@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react'
-import { LayoutDashboard, FolderKanban, SlidersHorizontal, LogOut,Calendar,Users,User } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, SlidersHorizontal, LogOut,Calendar,Users,User,Sun } from 'lucide-react';
 import Link from 'next/link';
 import { apiRequest } from '@/app/lib/api';
 import { useRouter } from 'next/navigation';
@@ -47,6 +47,12 @@ export default function Sidebar() {
                     <Link href='/members' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
                         <Users />
                         Members
+                    </Link>
+                </li>
+                <li>
+                    <Link href='/my-day' className='hover:bg-gray-300 p-2 rounded-md flex gap-2'>
+                        <Sun />
+                        My day
                     </Link>
                 </li>
                 <li>
