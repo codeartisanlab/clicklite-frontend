@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 type Workspace = {
     id: string;
     name: string;
+    owner_id: string;
 };
 
 type Member = {
@@ -28,6 +29,11 @@ export default function Members() {
     const [role, setRole] = useState('member');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
+
+    const [currentUser, setCurrentUser] = useState<{
+        id: string;
+        email: string;
+    } | null>(null);
 
     useEffect(() => {
         async function loadWorkspaces() {
@@ -105,6 +111,36 @@ export default function Members() {
         }
     }
 
+    useEffect(() => {
+        async function loadMe() {
+            try {
+                const data = await apiRequest('/api/auth/me');
+                setCurrentUser(data);
+            } catch (loadError) {
+                console.error('Account loading error:', loadError);
+            }
+        }
+
+        loadMe();
+    }, []);
+
+    const selectedWorkspace = workspaces.find(
+        (workspace) => workspace.id === workspaceId
+    );
+
+    const myRow = members.find(
+        (member) =>
+            member.email.toLowerCase() === currentUser?.email.toLowerCase()
+    );
+    
+    const canInvite = Boolean(
+        currentUser &&
+        (
+            selectedWorkspace?.owner_id === currentUser.id ||
+            myRow?.role === 'admin'
+        )
+    );
+
     return (
         <div>
             <Header />
@@ -114,14 +150,16 @@ export default function Members() {
                     <div className='flex justify-between w-full items-center'>
                         <h2 className='text-2xl font-semibold border-b border-gray-200 pb-1'>Members</h2>
                         {message && <p className='text-sm text-green-600'>{message}</p>}
-                        <button
-                            type='button'
-                            onClick={() => setIsModalOpen(true)}
-                            disabled={!workspaceId}
-                            className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer disabled:opacity-50'
-                        >
-                            Add New
-                        </button>
+                        {canInvite && (
+                            <button
+                                type='button'
+                                onClick={() => setIsModalOpen(true)}
+                                disabled={!workspaceId}
+                                className='bg-black hover:bg-gray-900 text-white p-2 rounded-lg cursor-pointer disabled:opacity-50'
+                            >
+                                Add New
+                            </button>
+                        )}
                     </div>
 
                     <select
@@ -193,9 +231,8 @@ export default function Members() {
                                     onChange={(event) => setRole(event.target.value)}
                                     className='px-3 py-1 border border-gray-300 rounded-md'
                                 >
+                                    <option value='admin'>Admin</option>
                                     <option value='member'>Member</option>
-                                    <option value='developer'>Developer</option>
-                                    <option value='designer'>Designer</option>
                                 </select>
                             </div>
                             {error && (
