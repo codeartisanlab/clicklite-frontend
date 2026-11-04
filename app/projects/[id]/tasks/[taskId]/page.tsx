@@ -65,7 +65,7 @@ function progressFor(status: string) {
 
 export default function TaskDetail() {
     const params = useParams();
-    const router=useRouter;
+    const router = useRouter();
     const projectId = params.id as string;
     const taskId = params.taskId as string;
 
