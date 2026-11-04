@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
+import { apiRequest } from "@/app/lib/api";
 
 export default function Register() {
     const [fullName, setFullName] = useState("");
@@ -52,29 +53,14 @@ export default function Register() {
         try {
             setLoading(true);
 
-            const response = await fetch(
-                "http://127.0.0.1:8000/api/auth/register",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        full_name: fullName.trim(),
-                        email: email.trim(),
-                        password: password,
-                    }),
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                setError(
-                    data.detail || "Registration failed."
-                );
-                return;
-            }
+            await apiRequest("/api/auth/register", {
+                method: "POST",
+                body: JSON.stringify({
+                    full_name: fullName.trim(),
+                    email: email.trim(),
+                    password: password,
+                }),
+            });
 
             setSuccess(
                 "Account created successfully!"
@@ -90,7 +76,9 @@ export default function Register() {
             console.error("Registration error:", error);
 
             setError(
-                "Unable to connect to the server."
+                error instanceof Error
+                    ? error.message
+                    : "Unable to connect to the server."
             );
         } finally {
             setLoading(false);
